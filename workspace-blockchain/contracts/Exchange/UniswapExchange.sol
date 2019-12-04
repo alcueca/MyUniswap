@@ -47,7 +47,12 @@ contract UniswapExchange {
             msg.value != 0,
             "Need to send some ether."
         );
-        ethToToken(msg.sender, msg.sender, msg.value, 1);
+        ethToToken(
+            msg.sender,
+            msg.sender,
+            msg.value,
+            1
+        );
     }
 
     /// EXTERNAL FUNCTIONS
@@ -82,7 +87,12 @@ contract UniswapExchange {
             msg.value > 0 && _minTokens > 0 && now < _timeout,
             "Invalid ethToTokenSwap parameters"
         );
-        ethToToken(msg.sender, msg.sender, msg.value,  _minTokens);
+        ethToToken(
+            msg.sender,
+            msg.sender,
+            msg.value,
+            _minTokens
+        );
     }
 
     // Payer pays in ETH, recipient receives Tokens
@@ -103,7 +113,12 @@ contract UniswapExchange {
             _recipient != address(0) && _recipient != address(this),
             "Invalid ethToTokenPayment recipient."
         );
-        ethToToken(msg.sender, _recipient, msg.value,  _minTokens);
+        ethToToken(
+            msg.sender,
+            _recipient,
+            msg.value,
+            _minTokens
+        );
     }
 
     // Buyer swaps Tokens for ETH
@@ -119,7 +134,12 @@ contract UniswapExchange {
             _tokenAmount > 0 && _minEth > 0 && now < _timeout,
             "Invalid tokenToEthSwap parameters."
         );
-        tokenToEth(msg.sender, msg.sender, _tokenAmount, _minEth);
+        tokenToEth(
+            msg.sender,
+            msg.sender,
+            _tokenAmount,
+            _minEth
+        );
     }
 
     // Payer pays in Tokens, recipient receives ETH
@@ -140,7 +160,12 @@ contract UniswapExchange {
             _recipient != address(0) && _recipient != address(this),
             "Invalid tokenToEthPayment recipient."
         );
-        tokenToEth(msg.sender, _recipient, _tokenAmount, _minEth);
+        tokenToEth(
+            msg.sender,
+            _recipient,
+            _tokenAmount,
+            _minEth
+        );
     }
 
     // Buyer swaps Tokens in current exchange for Tokens of provided address
@@ -157,7 +182,13 @@ contract UniswapExchange {
             _tokensSold > 0 && _minTokensReceived > 0 && now < _timeout,
             "Invalid tokenToTokenSwap parameters."
         );
-        tokenToTokenOut(_tokenPurchased, msg.sender, msg.sender, _tokensSold, _minTokensReceived);
+        tokenToTokenOut(
+            _tokenPurchased,
+            msg.sender,
+            msg.sender,
+            _tokensSold,
+            _minTokensReceived
+        );
     }
 
     // Payer pays in exchange Token, recipient receives Tokens of provided address
@@ -179,7 +210,13 @@ contract UniswapExchange {
             _recipient != address(0) && _recipient != address(this),
             "Invalid tokenToTokenPayment recipient."
         );
-        tokenToTokenOut(_tokenPurchased, msg.sender, _recipient, _tokensSold, _minTokensReceived);
+        tokenToTokenOut(
+            _tokenPurchased,
+            msg.sender,
+            _recipient,
+            _tokensSold,
+            _minTokensReceived
+        );
     }
 
     // Function called by another Uniswap exchange in Token to Token swaps and payments
@@ -200,7 +237,12 @@ contract UniswapExchange {
             exchangeToken != address(0),
             "Invalid Exchange."
         );   // Only a Uniswap exchange can call this function
-        ethToToken(msg.sender, _recipient, msg.value, _minTokens);
+        ethToToken(
+            msg.sender,
+            _recipient,
+            msg.value,
+            _minTokens
+        );
         return true;
     }
 
