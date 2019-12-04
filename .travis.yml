@@ -1,0 +1,27 @@
+dist: xenial
+
+language: node_js
+
+services:
+    - docker
+
+env:
+    - DOCKER_COMPOSE_VERSION=1.4.2
+
+node_js:
+    - "lts/dubnium"
+
+before_install:
+    - docker pull trufflesuite/ganache-cli:v6.4.3
+    - docker run -d -p 8545:8545 trufflesuite/ganache-cli:v6.4.3
+
+install:
+    - yarn
+
+before_script:
+    - (cd workspace-blockchain && yarn deploy:ganache:local)
+
+script:
+    - yarn workspaces run test:ci
+    - yarn workspaces run coverage:ci
+    - yarn workspaces run lint
