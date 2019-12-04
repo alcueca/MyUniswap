@@ -2,7 +2,7 @@ pragma solidity ^0.5.10;
 import "./UniswapExchange.sol";
 
 
-contract FactoryInterface {
+contract IUniswapFactory {
     address[] public tokenList;
     mapping(address => address) tokenToExchange;
     mapping(address => address) exchangeToToken;
@@ -14,7 +14,7 @@ contract FactoryInterface {
 }
 
 
-contract UniswapFactory is FactoryInterface {
+contract UniswapFactory is IUniswapFactory {
     event ExchangeLaunch(address indexed exchange, address indexed token);
 
     // index of tokens with registered exchanges

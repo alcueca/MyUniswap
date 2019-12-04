@@ -25,7 +25,7 @@ contract UniswapExchange {
     address public factoryAddress;
     mapping(address => uint256) shares;
     IERC20 token;
-    FactoryInterface factory;
+    IUniswapFactory factory;
 
     /// MODIFIERS
     modifier exchangeInitialized() {
@@ -38,7 +38,7 @@ contract UniswapExchange {
         tokenAddress = _tokenAddress;
         factoryAddress = msg.sender;
         token = IERC20(tokenAddress);
-        factory = FactoryInterface(factoryAddress);
+        factory = IUniswapFactory(factoryAddress);
     }
 
     /// FALLBACK FUNCTION
