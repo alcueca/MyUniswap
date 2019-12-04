@@ -23,8 +23,14 @@ contract UniswapFactory is FactoryInterface {
     mapping(address => address) exchangeToToken;
 
     function launchExchange(address _token) public returns (address exchange) {
-        require(tokenToExchange[_token] == address(0));             //There can only be one exchange per token
-        require(_token != address(0) && _token != address(this));
+        require(
+            tokenToExchange[_token] == address(0),
+            "Already an exchange for that."
+        ); //There can only be one exchange per token
+        require(
+            _token != address(0) && _token != address(this),
+            "Not a valid token address."
+        );
         address payable newExchange = address(new UniswapExchange(_token));
         tokenList.push(_token);
         tokenToExchange[_token] = newExchange;

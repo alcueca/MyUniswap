@@ -43,7 +43,10 @@ contract UniswapExchange {
 
     /// FALLBACK FUNCTION
     function() external payable {
-        require(msg.value != 0);
+        require(
+            msg.value != 0,
+            "Need to send some ether."
+        );
         ethToToken(msg.sender, msg.sender, msg.value, 1);
     }
 
@@ -75,6 +78,7 @@ contract UniswapExchange {
         payable
     {
         require(
+            // solium-disable-next-line security/no-block-members
             msg.value > 0 && _minTokens > 0 && now < _timeout,
             "Invalid ethToTokenSwap parameters"
         );
@@ -91,6 +95,7 @@ contract UniswapExchange {
         payable
     {
         require(
+            // solium-disable-next-line security/no-block-members
             msg.value > 0 && _minTokens > 0 && now < _timeout,
             "Invalid ethToTokenPayment parameters."
         );
@@ -110,6 +115,7 @@ contract UniswapExchange {
         external
     {
         require(
+            // solium-disable-next-line security/no-block-members
             _tokenAmount > 0 && _minEth > 0 && now < _timeout,
             "Invalid tokenToEthSwap parameters."
         );
@@ -126,6 +132,7 @@ contract UniswapExchange {
         external
     {
         require(
+            // solium-disable-next-line security/no-block-members
             _tokenAmount > 0 && _minEth > 0 && now < _timeout,
             "Invalid tokenToEthPayment parameters."
         );
@@ -146,6 +153,7 @@ contract UniswapExchange {
         external
     {
         require(
+            // solium-disable-next-line security/no-block-members
             _tokensSold > 0 && _minTokensReceived > 0 && now < _timeout,
             "Invalid tokenToTokenSwap parameters."
         );
@@ -163,6 +171,7 @@ contract UniswapExchange {
         external
     {
         require(
+            // solium-disable-next-line security/no-block-members
             _tokensSold > 0 && _minTokensReceived > 0 && now < _timeout,
             "Invalid tokenToTokenPayment parameters."
         );
@@ -203,11 +212,20 @@ contract UniswapExchange {
         payable
         exchangeInitialized
     {
-        require(msg.value > 0 && _minShares > 0);
+        require(
+            msg.value > 0 && _minShares > 0,
+            "Invalid investLiquidity parameters."
+        );
         uint256 ethPerShare = ethPool.div(totalShares);
-        require(msg.value >= ethPerShare);
+        require(
+            msg.value >= ethPerShare,
+            "Not enough ether sent."
+        );
         uint256 sharesPurchased = msg.value.div(ethPerShare);
-        require(sharesPurchased >= _minShares);
+        require(
+            sharesPurchased >= _minShares,
+            "Not enough shares purchased"
+        );
         uint256 tokensPerShare = tokenPool.div(totalShares);
         uint256 tokensRequired = sharesPurchased.mul(tokensPerShare);
         shares[msg.sender] = shares[msg.sender].add(sharesPurchased);
@@ -216,7 +234,10 @@ contract UniswapExchange {
         tokenPool = tokenPool.add(tokensRequired);
         invariant = ethPool.mul(tokenPool);
         emit Investment(msg.sender, sharesPurchased);
-        require(token.transferFrom(msg.sender, address(this), tokensRequired));
+        require(
+            token.transferFrom(msg.sender, address(this), tokensRequired),
+            "Liquidity transfer failed."
+        );
     }
 
     // Divest market shares and receive liquidity
@@ -227,13 +248,19 @@ contract UniswapExchange {
     )
         external
     {
-        require(_sharesBurned > 0);
+        require(
+            _sharesBurned > 0,
+            "Not enough shares to burn."
+        );
         shares[msg.sender] = shares[msg.sender].sub(_sharesBurned);
         uint256 ethPerShare = ethPool.div(totalShares);
         uint256 tokensPerShare = tokenPool.div(totalShares);
         uint256 ethDivested = ethPerShare.mul(_sharesBurned);
         uint256 tokensDivested = tokensPerShare.mul(_sharesBurned);
-        require(ethDivested >= _minEth && tokensDivested >= _minTokens);
+        require(
+            ethDivested >= _minEth && tokensDivested >= _minTokens,
+            "Tried to divest too much."
+        );
         totalShares = totalShares.sub(_sharesBurned);
         ethPool = ethPool.sub(ethDivested);
         tokenPool = tokenPool.sub(tokensDivested);
@@ -243,7 +270,10 @@ contract UniswapExchange {
             invariant = ethPool.mul(tokenPool);
         }
         emit Divestment(msg.sender, _sharesBurned);
-        require(token.transfer(msg.sender, tokensDivested));
+        require(
+            token.transfer(msg.sender, tokensDivested),
+            "Divestment transfer failed."
+        );
         msg.sender.transfer(ethDivested);
     }
 
@@ -273,12 +303,18 @@ contract UniswapExchange {
         uint256 tempEthPool = newEthPool.sub(fee);
         uint256 newTokenPool = invariant.div(tempEthPool);
         uint256 tokensOut = tokenPool.sub(newTokenPool);
-        require(tokensOut >= minTokensOut && tokensOut <= tokenPool);
+        require(
+            tokensOut >= minTokensOut && tokensOut <= tokenPool,
+            "tokensOut not in range."
+        );
         ethPool = newEthPool;
         tokenPool = newTokenPool;
         invariant = newEthPool.mul(newTokenPool);
         emit EthToTokenPurchase(buyer, ethIn, tokensOut);
-        require(token.transfer(recipient, tokensOut));
+        require(
+            token.transfer(recipient, tokensOut),
+            "ethToToken transfer failed."
+        );
     }
 
     function tokenToEth(
@@ -295,12 +331,18 @@ contract UniswapExchange {
         uint256 tempTokenPool = newTokenPool.sub(fee);
         uint256 newEthPool = invariant.div(tempTokenPool);
         uint256 ethOut = ethPool.sub(newEthPool);
-        require(ethOut >= minEthOut && ethOut <= ethPool);
+        require(
+            ethOut >= minEthOut && ethOut <= ethPool,
+            "ethOut not in range"
+        );
         tokenPool = newTokenPool;
         ethPool = newEthPool;
         invariant = newEthPool.mul(newTokenPool);
         emit TokenToEthPurchase(buyer, tokensIn, ethOut);
-        require(token.transferFrom(buyer, address(this), tokensIn));
+        require(
+            token.transferFrom(buyer, address(this), tokensIn),
+            "tokenToEth transfer failed."
+        );
         recipient.transfer(ethOut);
     }
 
@@ -314,21 +356,35 @@ contract UniswapExchange {
         internal
         exchangeInitialized
     {
-        require(tokenPurchased != address(0) && tokenPurchased != address(this));
+        require(
+            tokenPurchased != address(0) && tokenPurchased != address(this),
+            "Invalid purchased token address.");
         address payable exchangeAddress = factory.tokenToExchangeLookup(tokenPurchased);
-        require(exchangeAddress != address(0) && exchangeAddress != address(this));
+        require(
+            exchangeAddress != address(0) && exchangeAddress != address(this),
+            "Invalid exchange address."
+        );
         uint256 fee = tokensIn.div(FEE_RATE);
         uint256 newTokenPool = tokenPool.add(tokensIn);
         uint256 tempTokenPool = newTokenPool.sub(fee);
         uint256 newEthPool = invariant.div(tempTokenPool);
         uint256 ethOut = ethPool.sub(newEthPool);
-        require(ethOut <= ethPool);
+        require(
+            ethOut <= ethPool,
+            "Not enough ether in pool."
+        );
         UniswapExchange exchange = UniswapExchange(exchangeAddress);
         emit TokenToEthPurchase(buyer, tokensIn, ethOut);
         tokenPool = newTokenPool;
         ethPool = newEthPool;
         invariant = newEthPool.mul(newTokenPool);
-        require(token.transferFrom(buyer, address(this), tokensIn));
-        require(exchange.tokenToTokenIn.value(ethOut)(recipient, minTokensOut));
+        require(
+            token.transferFrom(buyer, address(this), tokensIn),
+            "tokenToTokenOut transfer failed."
+        );
+        require(
+            exchange.tokenToTokenIn.value(ethOut)(recipient, minTokensOut),
+            "No idea what this does."
+        );
     }
 }
