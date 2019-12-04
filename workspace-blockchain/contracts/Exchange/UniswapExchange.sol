@@ -1,6 +1,6 @@
 pragma solidity ^0.5.10;
-import "./SafeMath.sol";
-import "./ERC20Interface.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./UniswapFactory.sol";
 
 
@@ -24,7 +24,7 @@ contract UniswapExchange {
     address public tokenAddress;
     address public factoryAddress;
     mapping(address => uint256) shares;
-    ERC20Interface token;
+    IERC20 token;
     FactoryInterface factory;
 
     /// MODIFIERS
@@ -37,7 +37,7 @@ contract UniswapExchange {
     constructor(address _tokenAddress) public {
         tokenAddress = _tokenAddress;
         factoryAddress = msg.sender;
-        token = ERC20Interface(tokenAddress);
+        token = IERC20(tokenAddress);
         factory = FactoryInterface(factoryAddress);
     }
 
